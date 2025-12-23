@@ -1,6 +1,7 @@
 export const SITE = {
   website: "https://likeit.dev/", // replace this with your deployed domain
   author: "Null",
+  createdYear: 2025, // 博客创建年份
   profile: "https://zwg.me/",
   desc: "个人学习记录与分享的博客，记录我的学习历程、经验总结和知识积累。作为一名终身学习者，分享探索过程中的思考与收获，希望能激励更多人保持学习热情。",
   title: "蓝色的海角",
