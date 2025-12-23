@@ -1,0 +1,38 @@
+---
+import Hr from "./Hr.astro";
+import Socials from "./Socials.astro";
+import { SITE } from "@/config";
+
+const author = SITE.author;
+
+export interface Props {
+  noMarginTop?: boolean;
+}
+
+const { noMarginTop = false } = Astro.props;
+---
+
+<footer class:list={["w-full", { "mt-auto": !noMarginTop }]}>
+  <Hr noPadding />
+  <div
+    class="flex flex-col items-center justify-between py-6 sm:flex-row-reverse sm:py-4"
+  >
+    <Socials centered />
+    <div class="my-2 flex flex-col items-center whitespace-nowrap sm:flex-row">
+      <span id="copyright-year" data-author={author}>版权 &#169;</span>
+      <span class="hidden sm:inline">&nbsp;|&nbsp;</span>
+      <span>保留所有权利</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  const copyrightYearElement = document.getElementById('copyright-year');
+  if (copyrightYearElement) {
+    const author = copyrightYearElement.dataset.author;
+    const currentYear = new Date().getFullYear();
+    copyrightYearElement.innerHTML = `版权 &#169; ${currentYear} ${author}`;
+  }
+</script>
+  </div>
+</footer>
