@@ -9,7 +9,7 @@ import { SITE } from "@/config";
 const backUrl = SITE.showBackButton ? `${Astro.url.pathname}` : "/";
 ---
 
-<Layout title={`搜索 | ${SITE.title}`}>
+<Layout title={`搜索 | ${SITE.title}`} description="博客搜索页面，支持全文搜索所有文章内容，快速找到您感兴趣的主题。">
   <Header />
   <Main pageTitle="搜索" pageDesc="搜索所有文章...">
     <div id="pagefind-search" transition:persist data-backurl={backUrl}></div>

@@ -18,7 +18,7 @@ export const getStaticPaths = (async ({ paginate }) => {
 const { page } = Astro.props;
 ---
 
-<Layout title={`文章 | ${SITE.title}`}>
+<Layout title={`文章 | ${SITE.title}`} description="博客文章列表页面，分页显示所有已发布文章，按时间倒序排列。">
   <Header />
   <Main pageTitle="文章" pageDesc="我发布的所有文章">
     <ul>
