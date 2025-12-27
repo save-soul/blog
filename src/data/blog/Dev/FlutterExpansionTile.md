@@ -14,16 +14,6 @@ tags:
 
 `FlutterExpansionTile` 是一个在 Flutter 原生 `ExpansionTile` 基础上进行功能增强的自定义组件。其主要创新点在于**精确控制上下文菜单的触发范围**，将菜单交互限定在标题行（包括 leading、title 和 subtitle），而不会影响展开箭头和子内容区域的正常操作。
 
-### 与原生组件的关键差异
-
-| 特性 | 原生 ExpansionTile | FlutterExpansionTile |
-|------|-------------------|---------------------|
-| 上下文菜单支持 | 不支持 | ✅ 精确标题行菜单 |
-| 菜单触发区域 | 无 | 仅标题行，避免误操作 |
-| 展开箭头交互 | 纯展开/收起功能 | 保持纯净，不受菜单干扰 |
-| 动画定制能力 | 有限支持 | 完全可定制动画系统 |
-| 子内容区域交互 | 正常 | 独立无障碍操作 |
-
 ## 完整组件源代码
 
 ```dart
@@ -118,8 +108,7 @@ class _FlutterExpansionTileState extends State<FlutterExpansionTile>
   @override
   Widget build(BuildContext context) {
     // 判断是否有上下文菜单
-    final hasContextMenu = widget.contextMenuItems != null && 
-                          widget.contextMenuItems!.isNotEmpty;
+    final hasContextMenu = widget.contextMenuItems != null && widget.contextMenuItems!.isNotEmpty;
     
     // 构建标题行
     Widget titleRow = ListTile(
@@ -324,9 +313,9 @@ FlutterExpansionTile(
 `FlutterExpansionTile` 组件通过**精确控制上下文菜单的作用范围**，解决了传统实现中菜单触发区域过大的问题。这种设计既保留了上下文菜单的便利性，又避免了与展开功能的操作冲突，显著提升了用户体验。
 
 **核心价值**：
-- ✅ **交互精确性**：菜单仅响应标题行操作，展开箭头功能纯净
-- ✅ **平台适应性**：自动适配桌面端和移动端的交互习惯
-- ✅ **性能优化**：条件渲染策略确保高效运行
-- ✅ **开发友好**：简洁的 API 设计，易于集成和使用
+- **交互精确性**：菜单仅响应标题行操作，展开箭头功能纯净
+- **平台适应性**：自动适配桌面端和移动端的交互习惯
+- **性能优化**：条件渲染策略确保高效运行
+- **开发友好**：简洁的 API 设计，易于集成和使用
 
 该组件特别适合需要精细交互控制的复杂应用场景，是构建现代化 Flutter 应用的理想选择。
