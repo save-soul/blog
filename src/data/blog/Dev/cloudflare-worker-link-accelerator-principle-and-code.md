@@ -104,53 +104,233 @@ function getFilenameFromUrl(url) {
 - URL参数方式调用
 - 移动端适配
 
-## 完整代码详解
+## 完整代码
 
 ```javascript
-// 1. 事件监听器 - Worker入口
 addEventListener('fetch', event => {
   event.respondWith(handleRequest(event.request))
 })
 
-// 2. 配置部分
+// 特殊规则配置
 const specialCases = [
   {
-    pattern: /.*/,  // 匹配所有请求
+    pattern: /.*/,
     rules: {
-      "Origin": "DELETE",  // 移除跨域限制
-      "Referer": "DELETE"  // 移除来源追踪
+      "Origin": "DELETE",
+      "Referer": "DELETE"
     }
   }
 ]
 
-// 3. 主请求处理函数
+// 黑名单配置
+const blacklist = []
+
+// 白名单
+const whitelist = []
+
+// 简约首页HTML
+const homepageHTML = `<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>链接加速工具</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; background: #f5f5f5; }
+        .container { background: white; border-radius: 8px; padding: 30px; margin-top: 40px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        h1 { text-align: center; margin-bottom: 20px; font-size: 24px; color: #333; }
+        .description { text-align: center; color: #666; margin-bottom: 30px; }
+        .input-group { margin-bottom: 20px; }
+        input[type="url"] { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 16px; }
+        input[type="url"]:focus { outline: none; border-color: #0066cc; }
+        button { width: 100%; padding: 12px; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; background: #0066cc; color: white; }
+        button:hover { opacity: 0.9; }
+        .info-box { background: #f8f9fa; padding: 15px; border-radius: 4px; border-left: 4px solid #0066cc; margin: 20px 0; }
+        .info-box h3 { margin-bottom: 10px; font-size: 16px; }
+        .usage { margin: 30px 0; }
+        .usage h3 { margin-bottom: 10px; }
+        code { background: #f8f9fa; padding: 2px 4px; border-radius: 3px; font-family: 'Monaco', 'Menlo', monospace; font-size: 14px; }
+        .warning { background: #fff3cd; border: 1px solid #ffc107; padding: 15px; border-radius: 4px; margin: 20px 0; }
+        .footer { text-align: center; color: #666; font-size: 14px; margin-top: 30px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>链接加速工具</h1>
+        <p class="description">移除跨域限制，加速下载链接</p>
+        
+        <div class="input-group">
+            <input type="url" id="url-input" placeholder="https://example.com/file.zip" autocomplete="off">
+        </div>
+        
+        <button onclick="downloadFile()">开始加速下载</button>
+        
+        <div class="info-box">
+            <h3>功能说明</h3>
+            <p>• 移除Origin、Referer等跨域限制</p>
+            <p>• 自动保持原始文件名</p>
+            <p>• 支持HTTP/HTTPS链接</p>
+        </div>
+        
+        <div class="usage">
+            <h3>使用方法</h3>
+            <p>1. 在输入框中粘贴链接</p>
+            <p>2. 点击"开始加速下载"按钮</p>
+            <p>3. 或者直接在URL后追加要加速的链接：</p>
+            <p><code>https://worker.workers.dev/https://example.com/file.zip</code></p>
+        </div>
+        
+        <div class="warning">
+            <p><strong>⚠️ 注意：</strong>请勿用于访问非法或侵权内容。</p>
+        </div>
+        
+        <div class="footer">
+            <p>© 2026 链接加速工具</p>
+        </div>
+    </div>
+    
+    <script>
+        function getWorkerUrl() { return window.location.origin + '/'; }
+        
+        function downloadFile() {
+            const input = document.getElementById('url-input');
+            const url = input.value.trim();
+            if (!url) { alert('请输入链接地址'); input.focus(); return; }
+            if (!isValidUrl(url)) { alert('请输入有效的链接'); return; }
+            
+            const iframe = document.createElement('iframe');
+            iframe.style.display = 'none';
+            iframe.src = getWorkerUrl() + encodeURIComponent(url);
+            document.body.appendChild(iframe);
+            setTimeout(() => iframe.remove(), 10000);
+        }
+        
+        function isValidUrl(string) {
+            try { new URL(string); return true; } 
+            catch (_) { return false; }
+        }
+        
+        document.getElementById('url-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') downloadFile();
+        });
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('url-input').focus();
+        });
+    </script>
+</body>
+</html>`;
+
+// 预编译黑名单正则表达式
+const blacklistRegex = blacklist.map(item => {
+  if (item.includes('.*')) {
+    const pattern = item.replace(/\./g, '\\.').replace(/\*/g, '.*');
+    return new RegExp(`^(.*\\.)?${pattern}$`);
+  } else if (item.includes('/')) {
+    const pattern = item.replace(/\./g, '\\.').replace(/\*/g, '.*');
+    return item.startsWith('http') 
+      ? new RegExp(`^${pattern}`)
+      : new RegExp(`^https?://${pattern}`);
+  } else {
+    const pattern = item.replace(/\./g, '\\.');
+    return new RegExp(`^(.*\\.)?${pattern}$`);
+  }
+});
+
+// 从URL中提取文件名
+function getFilenameFromUrl(url) {
+  try {
+    const urlObj = new URL(url);
+    const pathname = urlObj.pathname;
+    let filename = pathname.split('/').pop();
+    
+    if (!filename || !filename.includes('.')) {
+      filename = 'download';
+      const queryParams = ['filename', 'file', 'name', 'download'];
+      for (const param of queryParams) {
+        const value = urlObj.searchParams.get(param);
+        if (value) { filename = value; break; }
+      }
+    }
+    
+    return decodeURIComponent(filename)
+      .replace(/[<>:"/\\|?*]/g, '_')
+      .trim() || 'download';
+  } catch {
+    return 'download';
+  }
+}
+
+// 检查URL是否在黑名单中
+function isBlacklisted(url) {
+  const hostname = url.hostname;
+  return blacklistRegex.some(regex => regex.test(hostname)) && 
+         !whitelist.some(whiteItem => hostname === whiteItem || hostname.endsWith('.' + whiteItem));
+}
+
+// 处理特殊规则
+function handleSpecialCases(request) {
+  for (const { pattern, rules } of specialCases) {
+    if (pattern.test(new URL(request.url).hostname)) {
+      for (const [key, value] of Object.entries(rules)) {
+        if (value === "DELETE") {
+          request.headers.delete(key);
+        } else if (value !== "KEEP") {
+          request.headers.set(key, value);
+        }
+      }
+      break;
+    }
+  }
+}
+
+// 创建通用的响应头
+function createCommonHeaders(originalHeaders = {}) {
+  const headers = new Headers({
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Headers': '*',
+    'X-Content-Type-Options': 'nosniff',
+    'X-Frame-Options': 'DENY',
+    ...originalHeaders
+  });
+  return headers;
+}
+
+// 主请求处理函数
 async function handleRequest(request) {
   const url = new URL(request.url);
   
-  // 3.1 返回首页
+  // 处理根路径
   if (url.pathname === "/" || url.pathname === "/index.html") {
     return new Response(homepageHTML, {
-      headers: { 'Content-Type': 'text/html;charset=UTF-8' }
+      headers: {
+        'Content-Type': 'text/html;charset=UTF-8',
+        'Cache-Control': 'no-cache',
+        'X-Frame-Options': 'DENY',
+        'X-Content-Type-Options': 'nosniff'
+      }
     });
   }
   
-  // 3.2 代理请求处理
   try {
-    // 提取目标URL
-    const actualUrlStr = decodeURIComponent(
-      url.pathname.slice(1) + url.search + url.hash
-    );
+    // 获取实际URL
+    const actualUrlStr = decodeURIComponent(url.pathname.slice(1) + url.search + url.hash);
     const actualUrl = new URL(actualUrlStr);
     
-    // 安全检查
+    // 检查黑名单
     if (isBlacklisted(actualUrl)) {
       return new Response(
-        JSON.stringify({ error: "访问被拒绝" }),
-        { status: 403 }
+        JSON.stringify({ error: "访问被拒绝", message: "该域名已被列入黑名单" }),
+        { 
+          status: 403, 
+          headers: createCommonHeaders({ 'Content-Type': 'application/json' })
+        }
       );
     }
     
-    // 创建转发请求
+    // 创建修改后的请求
     const modifiedRequest = new Request(actualUrl, {
       headers: request.headers,
       method: request.method,
@@ -158,10 +338,10 @@ async function handleRequest(request) {
       redirect: 'follow'
     });
     
-    // 应用特殊规则
+    // 处理特殊规则
     handleSpecialCases(modifiedRequest);
     
-    // 设置默认User-Agent
+    // 添加默认User-Agent
     if (!modifiedRequest.headers.has('User-Agent')) {
       modifiedRequest.headers.set('User-Agent', 
         'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36');
@@ -170,26 +350,37 @@ async function handleRequest(request) {
     // 获取响应
     const response = await fetch(modifiedRequest);
     
-    // 处理响应头
+    // 判断是否为可下载文件
+    const contentType = response.headers.get('content-type') || '';
+    const isDownloadable = 
+      /^(application|audio|video|image)\//.test(contentType) ||
+      (contentType.includes('text/') && !contentType.includes('text/html')) ||
+      response.headers.get('content-disposition')?.includes('attachment');
+    
+    // 创建响应头
     const responseHeaders = createCommonHeaders(response.headers);
     
-    // 如果是文件下载，添加Content-Disposition
-    if (isDownloadable(response)) {
+    if (isDownloadable) {
       const filename = getFilenameFromUrl(actualUrlStr);
       const encodedFilename = encodeURIComponent(filename);
       responseHeaders.set('Content-Disposition', 
-        `attachment; filename="${encodedFilename}"`);
+        `attachment; filename="${encodedFilename}"; filename*=UTF-8''${encodedFilename}`);
+      responseHeaders.set('Cache-Control', 'public, max-age=86400');
     }
     
     return new Response(response.body, {
       status: response.status,
+      statusText: response.statusText,
       headers: responseHeaders
     });
     
   } catch (error) {
     return new Response(
-      JSON.stringify({ error: "无效的URL" }),
-      { status: 400 }
+      JSON.stringify({ error: "无效的URL", message: "请输入有效的HTTP/HTTPS链接" }),
+      { 
+        status: 400, 
+        headers: createCommonHeaders({ 'Content-Type': 'application/json' })
+      }
     );
   }
 }
