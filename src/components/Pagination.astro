@@ -19,7 +19,7 @@ const { page } = Astro.props;
         disabled={!page.url.prev}
         href={page.url.prev as string}
         class:list={["me-4 select-none", { "opacity-50": !page.url.prev }]}
-        ariaLabel="Previous"
+        aria-label="Previous"
       >
         <IconArrowLeft class="inline-block rtl:rotate-180" />
         上一页
@@ -29,7 +29,7 @@ const { page } = Astro.props;
         disabled={!page.url.next}
         href={page.url.next as string}
         class:list={["ms-4 select-none", { "opacity-50": !page.url.next }]}
-        ariaLabel="Next"
+        aria-label="Next"
       >
         下一页
         <IconArrowRight class="inline-block rtl:rotate-180" />
