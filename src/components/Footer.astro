@@ -7,6 +7,7 @@ const author = SITE.author;
 const createdYear = SITE.createdYear;
 const currentYear = new Date().getFullYear();
 const copyrightYear = createdYear === currentYear ? `${currentYear}` : `${createdYear}-${currentYear}`;
+const profile = SITE.profile;
 
 export interface Props {
   noMarginTop?: boolean;
@@ -22,7 +23,7 @@ const { noMarginTop = false } = Astro.props;
   >
     <Socials centered />
     <div class="my-2 flex flex-col items-center whitespace-nowrap sm:flex-row">
-      <span>版权 &#169; {copyrightYear} {author}</span>
+      <span>版权 &#169; {copyrightYear} <a href={profile} target="_blank">{author}</a></span>
       <span class="hidden sm:inline">&nbsp;|&nbsp;</span>
       <span>保留所有权利</span>
     </div>
